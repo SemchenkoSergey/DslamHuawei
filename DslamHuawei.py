@@ -87,17 +87,19 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}.*#'.format(self.hostname), timeout=60)
+                self.tn.expect('.{}.*#'.format(self.hostname), timeout=90)
             except Exception as ex:
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
                 return False
             result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-            if LOGGING:
-                self.logging('out',  result)
+            #if LOGGING:
+                #self.logging('out',  result)
             if result.count('\n') == 1 and not short:
                 continue
             if self.check_out(command_line, result):
+                if LOGGING:
+                    self.logging('out',  result)                
                 return result
             else:
                 time.sleep(60)
@@ -319,16 +321,18 @@ class DslamHuawei():
         self.write_read_data('quit',  short=True)
         self.write_read_data('quit',  short=True)
         
-    def set_adsl_line_profile_port(self, board, port, profile_index):
+    def set_adsl_line_profile_port(self, board, port, profile_index, first=True, final=True):
         """ Изменить профайл на порту """
         if profile_index not in self.adsl_line_profile:
             profile_index = 1
-        self.write_read_data('config',  short=True)
-        self.write_read_data('interface adsl 0/{}'.format(board),  short=True)
+        if first:
+            self.write_read_data('config',  short=True)
+            self.write_read_data('interface adsl 0/{}'.format(board),  short=True)
         self.write_read_data('deactivate {}'.format(port))
         self.write_read_data('activate {} profile-index {}'.format(port, profile_index))
-        self.write_read_data('quit',  short=True)
-        self.write_read_data('quit',  short=True)
+        if final:
+            self.write_read_data('quit',  short=True)
+            self.write_read_data('quit',  short=True)
         
     def execute_command(self, command, short=False):
         command_line = command.strip()
