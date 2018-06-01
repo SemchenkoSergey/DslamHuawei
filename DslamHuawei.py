@@ -79,6 +79,13 @@ class DslamHuawei():
             self.logging('in',  command_line)
         self.tn.sendline(command_line)
         return True
+    
+    def clean_out(self):
+        while True:
+            try:
+                self.tn.expect('#', timeout=2)
+            except:
+                break
 
     def read_data(self, command,  short):
         """ Чтение данных """
@@ -88,8 +95,8 @@ class DslamHuawei():
             try:
                 self.tn.expect('.{}.*#'.format(self.hostname), timeout=30)
             except Exception as ex:
-                print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
-                print(str(ex).split('\n')[0])
+                #print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
+                #print(str(ex).split('\n')[0])
                 return False
             result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
             if LOGGING:
@@ -101,13 +108,7 @@ class DslamHuawei():
                     #self.logging('out',  result)                
                 return result
             else:
-                time.sleep(15)
-                while True:
-                    try:
-                        self.tn.expect('#', timeout=1)
-                    except:
-                        break
-                return -1                  
+                return False              
         
     def write_read_data(self, command,  short=False):
         """ Выполнение команды и получение результата """
@@ -115,8 +116,11 @@ class DslamHuawei():
         for count in range(0, 5):
             self.write_data(command_line)
             result = self.read_data(command_line,  short)
-            if (result != -1) and (result is not False):
+            if result is not False:
                 return result
+            time.sleep(15)
+            self.clean_out()
+        print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
         return False
 
     def set_boards(self, boards_list):

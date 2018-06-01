@@ -22,8 +22,8 @@ def run_test(dslam):
     for port in range(0, dslam.ports):
         print(port, data[port])
         
-    print('\nset_adsl_line_profile_port')
-    dslam.set_adsl_line_profile_port(0,0,1)
+    #print('\nset_adsl_line_profile_port')
+    #dslam.set_adsl_line_profile_port(0,0,1)
     
     print('\nget_line_operation_port:')
     for port in range(0, dslam.ports):
@@ -53,8 +53,8 @@ def run_test(dslam):
 
 
 def main():
-    #dslam = DslamHuawei.DslamHuawei5600('ip', 'login', 'password')
-    dslam = DslamHuawei.DslamHuawei5616('172.26.194.67', 'root', 'mduadmin')
+    dslam = DslamHuawei.DslamHuawei5600('ip', 'login', 'password')
+    #dslam = DslamHuawei.DslamHuawei5616('ip', 'login', 'password')
     
     run_test(dslam)
     del dslam
