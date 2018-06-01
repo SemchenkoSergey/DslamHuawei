@@ -27,7 +27,11 @@ class DslamHuawei():
 
         # Распознавание версии ПО
         str_out = self.write_read_data('display version')
-        self.version = re.search(r'\b(MA.+?)\b', str_out).group(1)
+        version = re.search(r'\b(MA.+?)\b', str_out)
+        if version:
+            self.version = version.group(1)
+        else:
+            self.version = '-'
         self.set_adsl_line_profile()
     
     def __del__(self):
