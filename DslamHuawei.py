@@ -13,7 +13,7 @@ class DslamHuawei():
     @staticmethod
     def check_out(command, str_out):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command')
+        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error', 'Error')
         if command not in str_out:
             return False
         for string in bad_strings:
