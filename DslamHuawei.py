@@ -60,7 +60,7 @@ class DslamHuawei():
             self.tn.sendline(command)
             self.tn.expect('#')
         # Распознавание hostname
-        self.hostname = re.search('([\w-]+)$', self.tn.before.decode('utf-8')).group(1)
+        self.hostname = re.search('\n([\w-]+)$', self.tn.before.decode('utf-8')).group(1)
     
     def logging(self,  in_out, line):
         if not os.path.exists('dslam_logs'):
@@ -87,7 +87,7 @@ class DslamHuawei():
     def clean_out(self):
         while True:
             try:
-                self.tn.expect('#', timeout=2)
+                self.tn.expect('#', timeout=10)
             except:
                 break
 
@@ -123,6 +123,7 @@ class DslamHuawei():
             if result is not False:
                 return result
             time.sleep(15)
+            self.write_data(' ')
             self.clean_out()
         print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
         return False
