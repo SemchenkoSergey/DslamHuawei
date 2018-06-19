@@ -13,7 +13,7 @@ class DslamHuawei():
     @staticmethod
     def check_out(command, str_out):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error', 'Error')
+        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error')
         if command not in str_out:
             return False
         for string in bad_strings:
@@ -47,20 +47,20 @@ class DslamHuawei():
         self.tn.expect('(>|\) ----)')
         self.tn.sendline(' ')
         self.tn.expect('>')
-        commands = ['enable',
+        self.tn.sendline('enable')
+        self.tn.expect('#')
+        # Распознавание hostname
+        self.hostname = re.search('\n([\w-]+)$', self.tn.before.decode('utf-8')).group(1)        
+        commands = ['undo smart',
+                    'undo interactive',
                     'idle-timeout {}'.format(timeout),
                     'scroll 512',
-                    'undo smart',
-                    'undo interactive',
                     'undo alarm output all',
                     'config',
                     'undo info-center enable',
                     'quit']
         for command in commands:
-            self.tn.sendline(command)
-            self.tn.expect('#')
-        # Распознавание hostname
-        self.hostname = re.search('\n([\w-]+)$', self.tn.before.decode('utf-8')).group(1)
+            self.write_read_data(command,  short=True)
     
     def logging(self,  in_out, line):
         if not os.path.exists('dslam_logs'):
@@ -97,10 +97,10 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}.*#'.format(self.hostname), timeout=30)
+                self.tn.expect('.{}#'.format(self.hostname), timeout=30)
             except Exception as ex:
-                #print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
-                #print(str(ex).split('\n')[0])
+                print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
+                print(str(ex).split('\n')[0])
                 return False
             result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
             if LOGGING:
