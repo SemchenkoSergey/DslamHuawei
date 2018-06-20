@@ -97,7 +97,7 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}#'.format(self.hostname), timeout=30)
+                self.tn.expect('.{}.*#'.format(self.hostname), timeout=30)
             except Exception as ex:
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
@@ -190,10 +190,9 @@ class DslamHuawei():
             return False
         result = []
         for line in str_out.split('\n'):
-            try:
-                result.append(int(regex.search(line).group(1)))
-            except:
-                continue
+            match = regex.search(line)
+            if match:
+                result.append(int(match.group(1)))
         return result       
     
     def get_line_operation_board(self, board):
@@ -295,12 +294,11 @@ class DslamHuawei():
         str_out = self.write_read_data(command_line)
         if str_out is False:
             return False
-        result = []
+        result = ['-' for x in range(0, self.ports)]
         for line in str_out.split('\n'):
-            try:
-                result.append(int(regex.search(line).group(3)))
-            except:
-                continue
+            match = regex.search(line)
+            if match:
+                result[int(match.group(1))] = int(match.group(3))
         return result       
 
     def get_time(self):
