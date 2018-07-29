@@ -19,7 +19,7 @@ class DslamHuawei():
         for string in bad_strings:
             if string in str_out:
                 return False
-        return True    
+        return True
 
     def __init__(self, ip, login, password,  timeout):
         self.ip = ip
