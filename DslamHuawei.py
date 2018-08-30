@@ -6,7 +6,7 @@ import time
 import re
 import os
 
-LOGGING = True
+LOGGING = False
 
 class DslamHuawei():
     
@@ -32,7 +32,7 @@ class DslamHuawei():
             self.version = version.group(1)
         else:
             self.version = '-'
-        self.set_adsl_line_profile()
+        #self.set_adsl_line_profile()
     
     def __del__(self):
         self.tn.close()
@@ -59,19 +59,10 @@ class DslamHuawei():
                     'undo interactive',
                     'idle-timeout {}'.format(timeout),
                     'scroll 512',
-                    'undo alarm output all',
-                    'config',
-                    'undo info-center enable',
-                    'quit']
+                    'undo alarm output all']
         for command in commands:
             self.write_read_data(command,  short=True)
     
-    #def logging(self,  in_out, line):
-        #if not os.path.exists('dslam_logs'):
-            #os.mkdir('dslam_logs')
-        #with open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%d-%m-%y')), 'a') as log_file:
-            #log_file.write('{} {}\n{}\n**************************************\n'.format(in_out,  datetime.datetime.now().strftime('%H:%M:%S'),  line))
-        
     def alive(self):
         """ Проверка есть ли связь с DSLAM """
         str_out = self.write_read_data('',  short=True)
@@ -83,8 +74,6 @@ class DslamHuawei():
     def write_data(self, command):
         """ Отправка команды """
         command_line = command
-        #if LOGGING:
-            #self.logging('in',  command_line)
         self.tn.sendline(command_line)
         return True
     
@@ -107,13 +96,9 @@ class DslamHuawei():
                 print(str(ex).split('\n')[0])
                 return False
             result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-            #if LOGGING:
-                #self.logging('out',  result)
             if result.count('\n') == 1 and not short:
                 continue
-            if self.check_out(command_line, result):
-                #if LOGGING:
-                    #self.logging('out',  result)                
+            if self.check_out(command_line, result):              
                 return result
             else:
                 return False              
