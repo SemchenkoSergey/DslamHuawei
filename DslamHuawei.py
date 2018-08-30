@@ -6,7 +6,7 @@ import time
 import re
 import os
 
-LOGGING = False
+LOGGING = True
 
 class DslamHuawei():
     
@@ -40,6 +40,10 @@ class DslamHuawei():
     def connect(self, login, password,  timeout):
         """ Подключиться к DSLAM """
         self.tn = pexpect.spawn('telnet {}'.format(self.ip))
+        if LOGGING:
+            if not os.path.exists('dslam_logs'):
+                os.mkdir('dslam_logs')   
+            self.tn.logfile = open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%d-%m-%y')), 'wb')
         self.tn.expect('>>User name:')
         self.tn.sendline(login)
         self.tn.expect('>>User password:')
@@ -62,11 +66,11 @@ class DslamHuawei():
         for command in commands:
             self.write_read_data(command,  short=True)
     
-    def logging(self,  in_out, line):
-        if not os.path.exists('dslam_logs'):
-            os.mkdir('dslam_logs')
-        with open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%d-%m-%y')), 'a') as log_file:
-            log_file.write('{} {}\n{}\n**************************************\n'.format(in_out,  datetime.datetime.now().strftime('%H:%M:%S'),  line))
+    #def logging(self,  in_out, line):
+        #if not os.path.exists('dslam_logs'):
+            #os.mkdir('dslam_logs')
+        #with open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%d-%m-%y')), 'a') as log_file:
+            #log_file.write('{} {}\n{}\n**************************************\n'.format(in_out,  datetime.datetime.now().strftime('%H:%M:%S'),  line))
         
     def alive(self):
         """ Проверка есть ли связь с DSLAM """
@@ -79,8 +83,8 @@ class DslamHuawei():
     def write_data(self, command):
         """ Отправка команды """
         command_line = command
-        if LOGGING:
-            self.logging('in',  command_line)
+        #if LOGGING:
+            #self.logging('in',  command_line)
         self.tn.sendline(command_line)
         return True
     
@@ -103,8 +107,8 @@ class DslamHuawei():
                 print(str(ex).split('\n')[0])
                 return False
             result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-            if LOGGING:
-                self.logging('out',  result)
+            #if LOGGING:
+                #self.logging('out',  result)
             if result.count('\n') == 1 and not short:
                 continue
             if self.check_out(command_line, result):
@@ -350,8 +354,54 @@ class DslamHuawei():
         if str_out is False:
             return False
         return str_out
-
-
+    
+    def add_user(self, user_profile, user_name, user_password):
+        self.tn.sendline('interactive')
+        self.tn.expect('#')
+        # Создание профайла для пользователя
+        self.tn.sendline('terminal user-profile add')
+        self.tn.expect('User profile name\(<=15 chars\):')
+        self.tn.sendline(user_profile)
+        num = self.tn.expect(['Validity period of the user name\(0--999 days\)\[0\]:', 'The user-profile has existed\.'])
+        if num == 1:
+            print('На DSLAM {} user-profile {} уже существует.'.format(self.hostname, user_profile))
+            return False
+        if num == 0:
+            self.tn.sendline('')
+            self.tn.expect('Validity period of the password\(0--999 days\)\[0\]:')
+            self.tn.sendline('')
+            self.tn.expect('Permitted start time of logon by a user\(hh:mm\)\[00:00\]:')
+            self.tn.sendline('')
+            self.tn.expect('Permitted end time of logon by a user\(hh:mm\)\[00:00\]:')
+            self.tn.sendline('')
+            self.tn.expect('Repeat this operation\? \(y/n\)\[n\]:')
+            self.tn.sendline('n')
+            self.tn.expect('#')
+            
+            # Создание пользователя
+            self.tn.sendline('terminal user name')
+            self.tn.expect('User Name\(length<6,15>\):')
+            self.tn.sendline(user_name)
+            self.tn.expect('User Password\(length<6,15>\):')
+            self.tn.sendline(user_password)
+            self.tn.expect('Confirm Password\(length<6,15>\):')
+            self.tn.sendline(user_password)
+            self.tn.expect('User profile name\(<=15 chars\)\[root\]:')
+            self.tn.sendline(user_profile)
+            self.tn.expect('1. Common User  2. Operator  3. Administrator:')
+            self.tn.sendline('2')
+            self.tn.expect('Permitted Reenter Number\(0--4\):')
+            self.tn.sendline('1')
+            self.tn.expect('User\'s Appended Info\(<=30 chars\):')
+            self.tn.sendline('Script User')          
+            self.tn.expect('Repeat this operation\? \(y/n\)\[n\]:')
+            self.tn.sendline('n')
+            self.tn.expect('#')
+            self.tn.sendline('undo interactive')
+            self.tn.expect('#')
+            return True
+            
+            
 class DslamHuawei5600(DslamHuawei):
     """ Huawei MA5600 """
     def __init__(self, ip, login, password, timeout=30):
@@ -377,4 +427,3 @@ class DslamHuawei5616(DslamHuawei):
     def set_boards(self):
         boards_list =  [1, 2, 3, 4]
         super().set_boards(boards_list)
-
