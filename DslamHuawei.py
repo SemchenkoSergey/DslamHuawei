@@ -13,7 +13,7 @@ class DslamHuawei():
     @staticmethod
     def check_out(command, str_out):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error')
+        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error', 'percentage of saved data')
         if command not in str_out:
             return False
         for string in bad_strings:
@@ -106,7 +106,7 @@ class DslamHuawei():
     def write_read_data(self, command,  short=False):
         """ Выполнение команды и получение результата """
         command_line = command
-        for count in range(0, 5):
+        for count in range(0, 3):
             self.write_data(command_line)
             result = self.read_data(command_line,  short)
             if result is not False:
@@ -350,6 +350,13 @@ class DslamHuawei():
         num = self.tn.expect(['Validity period of the user name\(0--999 days\)\[0\]:', 'The user-profile has existed\.'])
         if num == 1:
             print('На DSLAM {} user-profile {} уже существует.'.format(self.hostname, user_profile))
+            self.tn.expect('User profile name\(<=15 chars\)')
+            self.tn.sendline('')
+            self.tn.expect('User profile name\(<=15 chars\)')
+            self.tn.sendline('')
+            self.tn.expect('#')  
+            self.tn.sendline('save')
+            self.tn.expect('#') 
             return False
         if num == 0:
             self.tn.sendline('')
@@ -383,6 +390,8 @@ class DslamHuawei():
             self.tn.sendline('n')
             self.tn.expect('#')
             self.tn.sendline('undo interactive')
+            self.tn.expect('#')
+            self.tn.sendline('save')
             self.tn.expect('#')
             return True
             
