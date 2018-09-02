@@ -119,13 +119,14 @@ class DslamHuawei():
 
     def set_boards(self, boards_list):
         """ Установить self.boards - список плат """
+        regex = r'Main Board:\s+H\d+AD'
         self.boards = []
         for board in boards_list:
             command_line = 'display version 0/{}'.format(board)
             str_out = self.write_read_data(command_line)
             if str_out is False:
                 return False
-            if 'Failure' not in str_out:
+            if ('Failure' not in str_out) and (re.search(regex, str_out)):
                 self.boards.append(board) 
     
     def set_adsl_line_profile(self):
@@ -196,11 +197,17 @@ class DslamHuawei():
                     'up_rate' : '-',
                     'dw_rate' : '-'}
         result = [template for x in range(0, self.ports)]
-        regex = r"( +-?\d+\.?\d*){11}"
         command_line = '{} 0/{}'.format(command, board)
         str_out = self.write_read_data(command_line)
         if str_out is False:
-            return False        
+            return False
+        if 'Xdsl UpNoise DwNoise Up Stream Dw Stream MaxUp MaxDw UpOut DwOut Up    Dw' in str_out:
+            regex = r"( *-?\d+\.?\d*){11}"
+        elif 'XP UNM  DNM   USA   DSA  MUR   MDR   UOP   DOP   UR    DR    CES     RES    IT' in str_out:
+            regex = r"( *-?\d+\.?\d*){14}"
+        else:
+            print('{}, {}: {} - не удалось распознать вывод'.format(self.ip, self.hostname, board))
+            return result
         matches = re.finditer(regex, str_out)
         for match in matches:
             match_list = list(match.group(0).split())
