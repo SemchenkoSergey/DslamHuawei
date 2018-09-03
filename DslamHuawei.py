@@ -13,7 +13,7 @@ class DslamHuawei():
     @staticmethod
     def check_out(command, str_out):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'error', 'percentage of saved data')
+        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'percentage of saved data')
         if command not in str_out:
             return False
         for string in bad_strings:
@@ -126,7 +126,7 @@ class DslamHuawei():
             str_out = self.write_read_data(command_line)
             if str_out is False:
                 return False
-            if ('Failure' not in str_out) and (re.search(regex, str_out)):
+            if ('Failure' not in str_out) and ('% Parameter error' not in str_out) and (re.search(regex, str_out)):
                 self.boards.append(board) 
     
     def set_adsl_line_profile(self):
