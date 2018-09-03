@@ -13,7 +13,7 @@ class DslamHuawei():
     @staticmethod
     def check_out(command, str_out):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'please wait',  'Unknown command', 'percentage of saved data')
+        bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
         if command not in str_out:
             return False
         for string in bad_strings:
@@ -90,7 +90,7 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}.*#'.format(self.hostname), timeout=30)
+                self.tn.expect('.{}.*#'.format(self.hostname), timeout=120)
             except Exception as ex:
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
@@ -205,8 +205,10 @@ class DslamHuawei():
             regex = r"( *-?\d+\.?\d*){11}"
         elif 'XP UNM  DNM   USA   DSA  MUR   MDR   UOP   DOP   UR    DR    CES     RES    IT' in str_out:
             regex = r"( *-?\d+\.?\d*){14}"
+        elif ('Failure: Port is not active' in str_out) or ('Failure: No port has been activated' in str_out):
+            return result
         else:
-            print('{}, {}: {} - не удалось распознать вывод'.format(self.ip, self.hostname, board))
+            print('{}, {}: {} - не удалось распознать вывод {}'.format(self.ip, self.hostname, board, command_line))
             return result
         matches = re.finditer(regex, str_out)
         for match in matches:
