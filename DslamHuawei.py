@@ -90,7 +90,7 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}.*#'.format(self.hostname), timeout=120)
+                self.tn.expect('.{}#'.format(self.hostname), timeout=120)
             except Exception as ex:
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
@@ -111,7 +111,7 @@ class DslamHuawei():
             result = self.read_data(command_line,  short)
             if result is not False:
                 return result
-            time.sleep(15)
+            time.sleep(30)
             self.write_data(' ')
             self.clean_out()
         print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
