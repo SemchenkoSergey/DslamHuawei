@@ -9,18 +9,6 @@ import os
 LOGGING = False
 
 class DslamHuawei():
-    
-    @staticmethod
-    def check_out(command, str_out):
-        """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
-        if command not in str_out:
-            return False
-        for string in bad_strings:
-            if string in str_out:
-                return False
-        return True
-
     def __init__(self, ip, login, password,  timeout):
         self.ip = ip
         self.connect(login,  password,  timeout)
@@ -83,11 +71,24 @@ class DslamHuawei():
                 self.tn.expect('#', timeout=10)
             except:
                 break
+            
+    def check_out(self, command, str_out, short):
+        """ Проверка вывода команды """
+        bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
+        if not re.search(r'^{}'.format(command), str_out):
+            return False
+        if (not short) and (str_out.replace('\n', '').replace('\r', '').replace(self.hostname, '').strip() == command):
+            return False
+        for string in bad_strings:
+            if string in str_out:
+                return False
+        return True    
 
     def read_data(self, command,  short):
         """ Чтение данных """
         command_line = command
         result = ''
+        expect_count = 0
         while True:
             try:
                 self.tn.expect('.{}#'.format(self.hostname), timeout=120)
@@ -95,13 +96,15 @@ class DslamHuawei():
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
                 return False
-            result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-            if result.count('\n') == 1 and not short:
-                continue
-            if self.check_out(command_line, result):              
-                return result
             else:
-                return False              
+                result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
+                expect_count += 1
+                if expect_count == 1 and not short:
+                    continue
+                if self.check_out(command_line, result, short):              
+                    return result
+                else:
+                    return False              
         
     def write_read_data(self, command,  short=False):
         """ Выполнение команды и получение результата """
@@ -111,9 +114,10 @@ class DslamHuawei():
             result = self.read_data(command_line,  short)
             if result is not False:
                 return result
-            time.sleep(30)
-            self.write_data(' ')
-            self.clean_out()
+            else:
+                time.sleep(30)
+                self.write_data(' ')
+                self.clean_out()
         print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
         return False
 
