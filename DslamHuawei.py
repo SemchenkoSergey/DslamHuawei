@@ -88,7 +88,6 @@ class DslamHuawei():
         """ Чтение данных """
         command_line = command
         result = ''
-        expect_count = 0
         while True:
             try:
                 self.tn.expect('.{}#'.format(self.hostname), timeout=120)
@@ -98,8 +97,7 @@ class DslamHuawei():
                 return False
             else:
                 result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-                expect_count += 1
-                if expect_count == 1 and not short:
+                if result.count('\n') == 1 and not short:
                     continue
                 if self.check_out(command_line, result, short):              
                     return result
