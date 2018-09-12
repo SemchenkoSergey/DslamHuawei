@@ -31,7 +31,7 @@ class DslamHuawei():
         if LOGGING:
             if not os.path.exists('dslam_logs'):
                 os.mkdir('dslam_logs')   
-            self.tn.logfile = open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%d-%m-%y')), 'wb')
+            self.tn.logfile = open('dslam_logs{}{} {}.txt'.format(os.sep, self.ip,  datetime.datetime.now().strftime('%Y-%m-%d')), 'ab')
         self.tn.expect('>>User name:')
         self.tn.sendline(login)
         self.tn.expect('>>User password:')
