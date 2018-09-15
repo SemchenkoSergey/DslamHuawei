@@ -102,6 +102,7 @@ class DslamHuawei():
                 if self.check_out(command_line, result, short):              
                     return result
                 else:
+                    print('{}({}) - {}\nBad output:\n{}'.format(self.hostname, self.ip, command, result))
                     return False              
         
     def write_read_data(self, command,  short=False):
