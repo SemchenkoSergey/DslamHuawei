@@ -76,14 +76,14 @@ class DslamHuawei():
         """ Проверка вывода команды """
         bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
         if not re.search(r'^{}'.format(command), str_out):
-            #print('1 - {}:\n{}'.format(command, str_out))
+            print('1 - {}({}) {}:\n{}'.format(self.hostname, self.ip, command, str_out))
             return False
-        if (not short) and (str_out.replace('\n', '').replace('\r', '').replace(self.hostname, '').strip() == command):
-            #print('2 - {}:\n{}'.format(command, str_out))
+        if (not short) and (str_out.replace('\n', '').replace(self.hostname, '').strip() == command):
+            print('2 - {}({}) {}:\n{}'.format(self.hostname, self.ip, command, str_out))
             return False
         for string in bad_strings:
             if string in str_out:
-                #print('3 - {}:\n{}'.format(command, str_out))
+                print('3 - {}({}) {}:\n{}'.format(self.hostname, self.ip, command, str_out))
                 return False
         return True    
 
