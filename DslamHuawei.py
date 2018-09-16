@@ -54,7 +54,7 @@ class DslamHuawei():
     def alive(self):
         """ Проверка есть ли связь с DSLAM """
         str_out = self.write_read_data('',  short=True)
-        if str_out == '\n':
+        if str_out == '\n\n':
             return True
         elif str_out is False:
             return False
@@ -76,11 +76,14 @@ class DslamHuawei():
         """ Проверка вывода команды """
         bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
         if not re.search(r'^{}'.format(command), str_out):
+            #print('1 - {}:\n{}'.format(command, str_out))
             return False
         if (not short) and (str_out.replace('\n', '').replace('\r', '').replace(self.hostname, '').strip() == command):
+            #print('2 - {}:\n{}'.format(command, str_out))
             return False
         for string in bad_strings:
             if string in str_out:
+                #print('3 - {}:\n{}'.format(command, str_out))
                 return False
         return True    
 
@@ -90,19 +93,19 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('.{}#'.format(self.hostname), timeout=120)
+                self.tn.expect('{}#'.format(self.hostname), timeout=120)
             except Exception as ex:
                 print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
                 print(str(ex).split('\n')[0])
                 return False
             else:
                 result += re.sub(r'[^A-Za-z0-9\n\./: _-]|(.\x1b\[..)', '', self.tn.before.decode('utf-8'))
-                if result.count('\n') == 1 and not short:
+                if result.count('\n') == 2 and not short:
                     continue
                 if self.check_out(command_line, result, short):              
                     return result
                 else:
-                    print('{}({}) - {}\nBad output:\n{}'.format(self.hostname, self.ip, command, result))
+                    #print('{}({}) - {}\nBad output:\n{}'.format(self.hostname, self.ip, command, result))
                     return False              
         
     def write_read_data(self, command,  short=False):
@@ -114,7 +117,7 @@ class DslamHuawei():
             if result is not False:
                 return result
             else:
-                time.sleep(30)
+                time.sleep(45)
                 self.write_data(' ')
                 self.clean_out()
         print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
