@@ -217,16 +217,19 @@ class DslamHuawei():
             print('{}, {}: {} - не удалось распознать вывод {}'.format(self.ip, self.hostname, board, command_line))
             return result
         matches = re.finditer(regex, str_out)
-        for match in matches:
-            match_list = list(match.group(0).split())
-            result[int(match_list[0])] = {'up_snr' : float(match_list[1]),
-                                          'dw_snr' : float(match_list[2]),
-                                          'up_att' : float(match_list[3]),
-                                          'dw_att' : float(match_list[4]),
-                                          'max_up_rate' : float(match_list[5]),
-                                          'max_dw_rate' : float(match_list[6]),
-                                          'up_rate' : float(match_list[9]),
-                                          'dw_rate' : float(match_list[10])}
+        if matches:
+            for match in matches:
+                match_list = list(match.group(0).split())
+                if len(match_list) < 11:
+                    continue
+                result[int(match_list[0])] = {'up_snr' : float(match_list[1]),
+                                              'dw_snr' : float(match_list[2]),
+                                              'up_att' : float(match_list[3]),
+                                              'dw_att' : float(match_list[4]),
+                                              'max_up_rate' : float(match_list[5]),
+                                              'max_dw_rate' : float(match_list[6]),
+                                              'up_rate' : float(match_list[9]),
+                                              'dw_rate' : float(match_list[10])}
         return result        
     
     def get_line_operation_port(self, board, port):
@@ -268,8 +271,9 @@ class DslamHuawei():
             return []
         elif 'Total:' in str_out:
             matches = re.finditer(regex, str_out)
-            for match in matches:
-                result.append((match.group(1), match.group(2)))
+            if matches:
+                for match in matches:
+                    result.append((match.group(1), match.group(2)))
             return result
     
     def get_adsl_line_profile(self, profile_index):
