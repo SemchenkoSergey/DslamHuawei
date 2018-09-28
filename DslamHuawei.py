@@ -95,7 +95,7 @@ class DslamHuawei():
             try:
                 self.tn.expect('{}#'.format(self.hostname), timeout=120)
             except Exception as ex:
-                print('{}: ошибка чтения. Команда - {}'.format(self.hostname, command_line))
+                print('{}({}): ошибка чтения. Команда - {}'.format(self.hostname, self.ip, command_line))
                 print(str(ex).split('\n')[0])
                 return False
             else:
