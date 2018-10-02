@@ -36,7 +36,9 @@ class DslamHuawei():
         self.tn.sendline(login)
         self.tn.expect('>>User password:')
         self.tn.sendline(password)
-        self.tn.expect('(>|\) ----)')
+        num = self.tn.expect([ '>>User name:', '(>|\) ----)'])
+        if num == 0:
+            raise Exception('{}: Invalid login/password!'.format(self.ip))
         self.tn.sendline(' ')
         self.tn.expect('>')
         self.tn.sendline('enable')
