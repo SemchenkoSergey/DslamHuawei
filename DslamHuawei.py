@@ -20,7 +20,7 @@ class DslamHuawei():
             self.version = version.group(1)
         else:
             self.version = '-'
-        #self.set_adsl_line_profile()
+        self.set_adsl_line_profile()
     
     def __del__(self):
         self.tn.close()
@@ -95,7 +95,7 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('{}#'.format(self.hostname), timeout=120)
+                self.tn.expect('{}.*#'.format(self.hostname), timeout=120)
             except Exception as ex:
                 print('{}({}): ошибка чтения. Команда - {}'.format(self.hostname, self.ip, command_line))
                 print(str(ex).split('\n')[0])
