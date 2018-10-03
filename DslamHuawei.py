@@ -56,7 +56,7 @@ class DslamHuawei():
     def alive(self):
         """ Проверка есть ли связь с DSLAM """
         str_out = self.write_read_data('',  short=True)
-        if str_out == '\n\n':
+        if str_out == '\n\n{}'.format(self.hostname):
             return True
         elif str_out is False:
             return False
@@ -95,7 +95,7 @@ class DslamHuawei():
         result = ''
         while True:
             try:
-                self.tn.expect('{}.*#'.format(self.hostname), timeout=120)
+                self.tn.expect('#', timeout=120)
             except Exception as ex:
                 print('{}({}): ошибка чтения. Команда - {}'.format(self.hostname, self.ip, command_line))
                 print(str(ex).split('\n')[0])
@@ -122,7 +122,7 @@ class DslamHuawei():
                 time.sleep(45)
                 self.write_data(' ')
                 self.clean_out()
-        print('{}: не удалось обработать команду {}'.format(self.hostname, command_line))
+        print('{}({}): не удалось обработать команду {}'.format(self.hostname, self.ip, command_line))
         return False
 
     def set_boards(self, boards_list):

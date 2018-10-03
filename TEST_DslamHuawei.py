@@ -25,7 +25,7 @@ def run_test(dslam):
     print('\nget_activated_ports:')
     print(dslam.get_activated_ports(1))
     print('\nset_adsl_line_profile_port')
-    dslam.set_adsl_line_profile_port(0,0,1)
+    dslam.set_adsl_line_profile_port(1,0,1)
     
     print('\nget_line_operation_port:')
     for port in range(0, dslam.ports):
