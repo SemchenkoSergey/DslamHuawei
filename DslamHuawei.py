@@ -147,7 +147,6 @@ class DslamHuawei():
         str_out = self.write_read_data(command_line)
         if str_out is False:
             return False
-        #self.adsl_line_profile = {}
         prev_name = ''
         prev_index = ''
         prev_up_rate = ''
