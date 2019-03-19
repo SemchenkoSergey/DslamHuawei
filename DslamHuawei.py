@@ -11,8 +11,12 @@ LINE_PROFILE = False
 
 class DslamHuawei():
     def __init__(self, ip, login, password,  timeout):
+        self.tn = None
         self.ip = ip
         self.connect(login,  password,  timeout)
+        
+        if self.tn is None:
+            raise Exception('{}: не удалость установить telnet соединение '.format(self.ip))
 
         # Распознавание версии ПО
         str_out = self.write_read_data('display version')
@@ -27,7 +31,8 @@ class DslamHuawei():
             
     
     def __del__(self):
-        self.tn.close()
+        if self.tn is not None:
+            self.tn.close()
     
     def connect(self, login, password,  timeout):
         """ Подключиться к DSLAM """
@@ -40,8 +45,8 @@ class DslamHuawei():
         self.tn.sendline(login)
         self.tn.expect('>>User password:')
         self.tn.sendline(password)
-        num = self.tn.expect([ '>>User name:', '(>|\) ----)'])
-        if num == 0:
+        num = self.tn.expect([ 'invalid', 'Fail', '(>|\) ----)'])
+        if num != 2:
             raise Exception('{}: Invalid login/password!'.format(self.ip))
         self.tn.sendline(' ')
         self.tn.expect('>')
