@@ -329,6 +329,20 @@ class DslamHuawei():
         list_time = re.search(r'(\w{2}:\w{2}:\w{2})', str_out).group(1).split(':')
         return datetime.datetime(int(list_date[0]), int(list_date[1]), int(list_date[2]), int(list_time[0]), int(list_time[1]), int(list_time[2]))
     
+    def get_device_type(self):
+        command = 'display version'
+        str_out = self.write_read_data(command)
+        if str_out is False:
+            return False
+        try:
+            result = re.search(r'MA(\d\d\d\d)\S+', str_out).group(1)
+        except Exception as ex:
+            print(self.ip)
+            print(ex)
+            print(str_out)
+            return False
+        return result
+    
     def set_activate_port(self, board, port):
         """ Активировать порт """
         if (board not in self.boards) or (port not in range(0, self.ports)):
