@@ -85,7 +85,7 @@ class DslamHuawei():
             
     def check_out(self, command, str_out, short):
         """ Проверка вывода команды """
-        bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data')
+        bad_strings = ('Failure: System is busy', 'Failure: The command is being executed', 'please wait',  'Unknown command', 'percentage of saved data', 'Failure: Command can not be executed rightly the cause is')
         if not re.search(r'^\n*{}'.format(command), str_out):
             #print('1 - {}({}) {}:\n{}'.format(self.hostname, self.ip, command, str_out))
             return False
