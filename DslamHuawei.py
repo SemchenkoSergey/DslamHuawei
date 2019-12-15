@@ -203,6 +203,10 @@ class DslamHuawei():
     
     def get_line_operation_board(self, board):
         """ Получить список параметров линий с активированных портов """
+        if self.model == '5616':
+            active_port = self.get_activated_ports(board)
+        else:
+            active_port = []
         command = 'display line operation board'
         template = {'up_snr' : '-',
                     'dw_snr' : '-',
@@ -232,7 +236,10 @@ class DslamHuawei():
                 match_list = list(match.group(0).split())
                 if len(match_list) < 11:
                     continue
-                result[int(match_list[0])] = {'up_snr' : float(match_list[1]),
+                port_number = int(match_list[0])
+                if (self.model == '5616') and (port_number not in active_port):
+                    continue
+                result[port_number] = {'up_snr' : float(match_list[1]),
                                               'dw_snr' : float(match_list[2]),
                                               'up_att' : float(match_list[3]),
                                               'dw_att' : float(match_list[4]),
@@ -249,7 +256,7 @@ class DslamHuawei():
         str_out = self.write_read_data(command_line)
         if str_out is False:
             return False
-        if re.search(r'Failure:.+is not activ(e|ated)', str_out):
+        if re.search(r'Failure:.+is not activ(e|ated)|is never activated', str_out):
             return {}
         dw_rate = float(re.search(r'Downstream (channel|actual).+rate.+: (\d+)', str_out).group(2))
         max_dw_rate = float(re.search(r'Downstream max.+: (\d+)', str_out).group(1))
